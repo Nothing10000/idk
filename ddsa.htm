@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>빈칸 만들기 예제</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        text-align: center;
+        font-size: 35px
+    }
+    .blank {
+        border: 1px solid #ccc;
+        display: inline-block;
+        margin: 5px;
+        font-size: 35px;
+    }
+</style>
+</head>
+<body>
+<h2>3과 본문 외우기 연습 사이트 입니다.</h2>
+<h6>(엔터 또는 스페이스바를 눌러 다음 빈칸으로 넘어갈 수 있습니다. 그리고 새로고침 하시면 초기화 됩니다.)</h6>
+<p id="textContainer"></p>
+
+<script>
+    const sentence = "Watch out! Hands off! This is my spot! Hey! Germs are everywhere, but it is impossible to see them with your eyes. There are two major kinds of germs: bacteria and viruses. Bacteria are very small creatures. Some are good. They can help you digest the food that you eat. Others are bad and can make you sick. Viruses are germs that can only live inside the cells of other living bodies. They cause diseases such as the flu. I'm in! Time to attack! Yay! success! Bad germs can enter your body through your skin, mouth, nose, and eyes. What happens when they invade? Make more copies of me. Now! The germs multiply in the body. Your body becomes a war zone. You start to feel tired and weak. We have an invader! Come quickly. Luckily, your body has an army of defense. The T cells sound the alarm! It's my job to defend the body. The B cells arrive to fight the germs with antibodies. That was a nice meal! Are there any more germs to eat? The macrophage cells show up and eat the germs. Together, this army is called the white blood cells. If all goes well, they win the fight. In a few days, you start to feel better. The body remembers the invader, so it cannot make copies of itself again. Fine. Next yer, I'll send in my cousin. He'll see you then for another fight! But the germs are smart too. They can change form and trick the body. What can I do now? There are several ways to protect yourself from germs. Oh, no! I can't hold on. First, wash your hands with soap and warm water. A balanced diet will keep your body strong and healthy. I'm ready to fight any germs. Me, too. Bring it on. It is also important to exercise regularly and get plenty of sleep. What? It's Game over for my cousins, too? We give up. We can't make you sick. Finally, get the necessary shots. They are the best defense against germs. If you follow, these steps, you will not be a victim of bad germs.";
+    const words = sentence.split(' ');
+    const excludedWords = [];
+    const longWordIndices = words.map((word, index) => {
+        const cleanedWord = word.replace(/[.,!?]/g, '');
+        if (excludedWords.includes(cleanedWord)){
+            return -1;
+        }
+        return cleanedWord.length >= 3 ? index : -1;
+    }).filter(index => index !== -1);
+    function getRandomBlankIndices(numBlanks, longWordIndices) {
+        const randomIndices = [];
+        while (randomIndices.length < numBlanks && longWordIndices.length > 0) {
+            const randomIndex = Math.floor(Math.random() * longWordIndices.length);
+            const index = longWordIndices.splice(randomIndex, 1)[0];
+            randomIndices.push(index);
+        }
+        return randomIndices;
+    }
+    function createBlanks(sentence, blankIndices) {
+        const textContainer = document.getElementById('textContainer');
+        textContainer.innerHTML = '';
+
+        words.forEach((word, index) => {
+            if (blankIndices.includes(index)) {
+                const cleanedWord = word.replace(/[.,!?:;]/g, '');
+                const punctuation = word.match(/[.,!?:;]/g) || '';
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.className = 'blank';
+                input.size = cleanedWord.length/1.3;
+                input.dataset.correctAnswer = cleanedWord;
+                input.addEventListener('keydown', handleKeyPress);
+                textContainer.appendChild(input);
+                if (punctuation) {
+                    textContainer.appendChild(document.createTextNode(punctuation + ' '));
+                }
+            } else {
+                textContainer.appendChild(document.createTextNode(word + ' '));
+            }
+        });
+    }
+    function handleKeyPress(event) {
+        if (event.key === 'Enter' || event.key === ' ') {
+            const blanks = document.querySelectorAll('.blank');
+            const currentInputIndex = Array.prototype.indexOf.call(blanks, event.target);
+            if (event.target.value.trim().toLowerCase() === event.target.dataset.correctAnswer.toLowerCase()) {
+                event.target.style.borderColor = 'green';
+                event.target.disabled = true;
+                event.target.value = event.target.dataset.correctAnswer;
+            } else {
+                event.target.style.borderColor = 'red';
+            }
+            if (currentInputIndex < blanks.length - 1) {
+                blanks[currentInputIndex + 1].focus();
+            } else {
+                checkAnswers();
+            }
+            event.preventDefault();
+        }
+    }
+    function checkAnswers() {
+        const blanks = document.querySelectorAll('.blank');
+        let allCorrect = true;
+
+        blanks.forEach(input => {
+            if (input.value.trim().toLowerCase() === input.dataset.correctAnswer.toLowerCase()) {
+                input.style.borderColor = 'green';
+            } else {
+                input.style.borderColor = 'red';
+                allCorrect = false;
+            }
+        });
+    }
+    const blankIndices = getRandomBlankIndices(1234, longWordIndices); // 2개의 빈칸으로 바꾸기
+    createBlanks(sentence, blankIndices);
+</script>
+
+</body>
+</html>
